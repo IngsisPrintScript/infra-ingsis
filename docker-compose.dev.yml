@@ -1,0 +1,61 @@
+version: "3.9"
+
+services:
+  reverse-proxy:
+    image: nginx:1.27-alpine
+    container_name: reverse-proxy-dev
+    volumes:
+      - ./nginx/dev.conf:/etc/nginx/conf.d/default.conf:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - snippet
+      - engine
+      - formatter
+      - linter
+      - tester
+      - ui
+    networks:
+      - internal
+
+  snippet:
+    image: ghcr.io/IngsisPrintScript/snippet-service-ingsis:latest
+    container_name: snippet-dev
+    networks:
+      - internal
+
+  engine:
+    image: ghcr.io/IngsisPrintScript/engine-service-ingsis:latest
+    container_name: engine-dev
+    networks:
+      - internal
+
+  formatter:
+    image: ghcr.io/IngsisPrintScript/format-service-ingsis:latest
+    container_name: formatter-dev
+    networks:
+      - internal
+
+  linter:
+    image: ghcr.io/IngsisPrintScript/lint-snippet-service:latest
+    container_name: linter-dev
+    networks:
+      - internal
+
+  tester:
+    image: ghcr.io/IngsisPrintScript/test-snippet-service-ingsis:latest
+    container_name: tester-dev
+    networks:
+      - internal
+
+  ui:
+    build: ../printscript-ui
+    container_name: ui-dev
+    networks:
+      - internal
+
+networks:
+  internal:
+    driver: bridge
