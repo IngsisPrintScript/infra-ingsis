@@ -20,15 +20,19 @@ services:
     networks:
       - internal
 
+  # 🟦 Snippet service → reemplazado por busybox temporalmente
   snippet:
-    build: ../snippet-service-ingsis
+    image: busybox
     container_name: snippet-dev
+    command: ["sleep", "3600"]  # para que el contenedor no se cierre
     networks:
       - internal
 
+  # 🟦 Engine service → también reemplazado temporalmente
   engine:
-    build: ../engine-service-ingsis
+    image: busybox
     container_name: engine-dev
+    command: ["sleep", "3600"]
     networks:
       - internal
 
@@ -51,7 +55,7 @@ services:
       - internal
 
   ui:
-    build: ../printscript-ui   
+    build: ../printscript-ui
     container_name: ui-dev
     networks:
       - internal
