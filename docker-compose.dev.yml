@@ -21,40 +21,40 @@ services:
       - internal
 
   snippet:
-    image: ghcr.io/IngsisPrintScript/snippet-service-ingsis:latest
-    container_name: snippet-dev
-    networks:
-      - internal
+  image: ghcr.io/ingsisprintscript/snippet-service-ingsis:latest
+  container_name: snippet-dev
+  networks:
+    - internal
 
-  engine:
-    image: ghcr.io/IngsisPrintScript/engine-service-ingsis:latest
-    container_name: engine-dev
-    networks:
-      - internal
+engine:
+  image: ghcr.io/ingsisprintscript/engine-service-ingsis:latest
+  container_name: engine-dev
+  networks:
+    - internal
 
-  formatter:
-    image: ghcr.io/IngsisPrintScript/format-service-ingsis:latest
-    container_name: formatter-dev
-    networks:
-      - internal
+formatter:
+  image: ghcr.io/ingsisprintscript/format-service-ingsis:latest
+  container_name: formatter-dev
+  networks:
+    - internal
 
-  linter:
-    image: ghcr.io/IngsisPrintScript/lint-snippet-service:latest
-    container_name: linter-dev
-    networks:
-      - internal
+linter:
+  image: ghcr.io/ingsisprintscript/lint-snippet-service:latest
+  container_name: linter-dev
+  networks:
+    - internal
 
-  tester:
-    image: ghcr.io/IngsisPrintScript/test-snippet-service-ingsis:latest
-    container_name: tester-dev
-    networks:
-      - internal
+tester:
+  image: ghcr.io/ingsisprintscript/test-snippet-service-ingsis:latest
+  container_name: tester-dev
+  networks:
+    - internal
 
-  ui:
-    build: ../printscript-ui
-    container_name: ui-dev
-    networks:
-      - internal
+ui:
+  image: ghcr.io/ingsisprintscript/printscript-ui:latest
+  container_name: ui-dev
+  networks:
+    - internal
 
 networks:
   internal:
