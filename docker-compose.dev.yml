@@ -40,7 +40,7 @@ services:
     build: ../format-service-ingsis
     container_name: formatter-dev
     volumes:
-      - ~/.gradle:/home/gradle/.gradle
+      - /home/MackyAlimena/.gradle:/home/gradle/.gradle
     networks:
       - internal
 
@@ -48,7 +48,7 @@ services:
     build: ../lint-snippet-service
     container_name: linter-dev
     volumes:
-      - ~/.gradle:/home/gradle/.gradle
+      - /home/MackyAlimena/.gradle:/home/gradle/.gradle
     networks:
       - internal
 
