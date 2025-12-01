@@ -45,8 +45,8 @@ services:
       - snippet-net
 
   tester:
-    image: ghcr.io/ingsisprintscript/tester-service:dev
-    container_name: tester-dev
+    image: ghcr.io/ingsisprintscript/test-service:dev
+    container_name: test-dev
     networks:
      - snippet-net
 
