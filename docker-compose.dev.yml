@@ -39,12 +39,16 @@ services:
   formatter:
     build: ../format-service-ingsis
     container_name: formatter-dev
+    volumes:
+      - ~/.gradle:/home/gradle/.gradle
     networks:
       - internal
 
   linter:
     build: ../lint-snippet-service
     container_name: linter-dev
+    volumes:
+      - ~/.gradle:/home/gradle/.gradle
     networks:
       - internal
 
