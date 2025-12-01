@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   reverse-proxy:
     image: nginx:1.27-alpine
@@ -17,53 +15,60 @@ services:
       - linter
       - tester
       - ui
+      - auth
+      - permission
     networks:
-      - internal
+      - snippet-net
 
-  # 🟦 Snippet service → reemplazado por busybox temporalmente
   snippet:
-    image: busybox
+    image: ghcr.io/ingsisprintscript/snippet-service:dev
     container_name: snippet-dev
-    command: ["sleep", "3600"]  # para que el contenedor no se cierre
     networks:
-      - internal
+     - snippet-net
 
-  # 🟦 Engine service → también reemplazado temporalmente
   engine:
-    image: busybox
+    image: ghcr.io/ingsisprintscript/engine-service:dev
     container_name: engine-dev
-    command: ["sleep", "3600"]
     networks:
-      - internal
+      - snippet-net
 
   formatter:
-    build: ../format-service-ingsis
+    image: ghcr.io/ingsisprintscript/format-service:dev
     container_name: formatter-dev
-    volumes:
-      - /home/MackyAlimena/.gradle:/home/gradle/.gradle
     networks:
-      - internal
+      - snippet-net
 
   linter:
     image: ghcr.io/ingsisprintscript/linter-service:dev
     container_name: linter-dev
     networks:
-      - internal
+      - snippet-net
 
   tester:
-    image: busybox
-    container_name: tester-dev
-    command: ["sleep", "3600"]
+    image: ghcr.io/ingsisprintscript/tester-service:dev
+    container_name: linter-dev
     networks:
-      - internal
+     - snippet-net
 
 
   ui:
     build: ../printscript-ui
     container_name: ui-dev
     networks:
-      - internal
-
+      - snippet-net
+      
+  auth: 
+    image: ghcr.io/ingsisprintscript/users-authorization:dev
+    container_name: user-dev
+    networks:
+      - snippet-net
+      
+  permission: 
+    image: ghcr.io/ingsisprintscript/permission-service:dev
+    container_name: permission-dev
+    networks:
+     - snippet-net
+      
 networks:
-  internal:
+  snippet-net:
     driver: bridge
