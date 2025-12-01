@@ -46,7 +46,7 @@ services:
 
   tester:
     image: ghcr.io/ingsisprintscript/tester-service:dev
-    container_name: linter-dev
+    container_name: tester-dev
     networks:
      - snippet-net
 
