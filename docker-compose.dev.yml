@@ -49,10 +49,12 @@ services:
       - internal
 
   tester:
-    build: ../test-snippet-service-ingsis
+    image: busybox
     container_name: tester-dev
+    command: ["sleep", "3600"]
     networks:
       - internal
+
 
   ui:
     build: ../printscript-ui
