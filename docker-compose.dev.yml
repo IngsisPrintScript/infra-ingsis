@@ -84,6 +84,11 @@ services:
       POSTGRES_USER: ${SNIPPET_USERNAME}
       POSTGRES_PASSWORD: ${SNIPPET_PASSWORD}
       POSTGRES_DB: ${SNIPPET_NAME}
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${SNIPPET_USERNAME}" ]
+      interval: 5s
+      timeout: 3s
+      retries: 5
     env_file:
       - env/.env
     volumes:
@@ -116,6 +121,11 @@ services:
       POSTGRES_USER: ${FORMAT_USERNAME}
       POSTGRES_PASSWORD: ${FORMAT_PASSWORD}
       POSTGRES_DB: ${FORMAT_NAME}
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${FORMAT_USERNAME}" ]
+      interval: 5s
+      timeout: 3s
+      retries: 5
     env_file:
       - env/.env
     volumes:
@@ -148,6 +158,11 @@ services:
       POSTGRES_USER: ${LINTER_USERNAME}
       POSTGRES_PASSWORD: ${LINTER_PASSWORD}
       POSTGRES_DB: ${LINTER_NAME}
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${LINTER_USERNAME}" ]
+      interval: 5s
+      timeout: 3s
+      retries: 5
     env_file:
       - env/.env
     volumes:
@@ -180,6 +195,11 @@ services:
       POSTGRES_USER: ${TEST_USERNAME}
       POSTGRES_PASSWORD: ${TEST_PASSWORD}
       POSTGRES_DB: ${TEST_NAME}
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${TEST_USERNAME}" ]
+      interval: 5s
+      timeout: 3s
+      retries: 5
     env_file:
       - env/.env
     volumes:
@@ -245,6 +265,11 @@ services:
       POSTGRES_USER: ${PERMISSION_USERNAME}
       POSTGRES_PASSWORD: ${PERMISSION_PASSWORD}
       POSTGRES_DB: ${PERMISSION_NAME}
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${PERMISSION_USERNAME}" ]
+      interval: 5s
+      timeout: 3s
+      retries: 5
     env_file:
       - env/.env
     volumes:
