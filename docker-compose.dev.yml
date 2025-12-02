@@ -60,17 +60,19 @@ services:
   asset-service:
     image: ghcr.io/austral-ingsis/snippet-asset-service:latest
     container_name: asset-service
+    env_file:
+      - env/.env
     healthcheck:
-      test: [ "CMD", "redis-cli", "ping" ]
+      test: [ "CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1" ]
       interval: 5s
       timeout: 3s
       retries: 5
-    env_file:
-      - env/.env
     depends_on:
-      - azurite
+      azurite:
+        condition: service_started
     networks:
       - snippet-net
+
 
   # ---------------------------------------------------------------------------
   # SNIPPET SERVICE
