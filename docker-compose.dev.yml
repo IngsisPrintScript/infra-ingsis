@@ -309,8 +309,6 @@ services:
     container_name: ui
     networks:
       - snippet-net
-    ports:
-      - "80:80"
 
 # ---------------------------------------------------------------------------
 # VOLUMES
