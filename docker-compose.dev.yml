@@ -13,13 +13,13 @@ services:
       - "80:80"
       - "443:443"
     depends_on:
-      - snippet-service
-      - format-service
-      - linter-service
-      - test-service
-      - authentication-service
-      - permission-service
-      - engine-service          
+      - snippet
+      - formatter
+      - linter
+      - tester
+      - authentication
+      - permission
+      - engine
       - ui                      
     networks:
       - snippet-net
