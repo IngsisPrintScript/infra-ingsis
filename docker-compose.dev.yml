@@ -102,7 +102,7 @@ services:
       snippet-db:
         condition: service_healthy
       asset-service:
-        condition: service_healthy
+        condition: service_started
     networks:
       - snippet-net
 
@@ -139,7 +139,7 @@ services:
       format-db:
         condition: service_healthy
       asset-service:
-        condition: service_healthy
+        condition: service_started
     networks:
       - snippet-net
 
@@ -176,7 +176,7 @@ services:
       linter-db:
         condition: service_healthy
       asset-service:
-        condition: service_healthy
+        condition: service_started
     networks:
       - snippet-net
 
@@ -213,7 +213,7 @@ services:
       test-db:
         condition: service_healthy
       asset-service:
-        condition: service_healthy
+        condition: service_started
     networks:
       - snippet-net
 
