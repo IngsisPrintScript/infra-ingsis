@@ -80,6 +80,8 @@ services:
       POSTGRES_USER: ${DATABASE_USERNAME}
       POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
       POSTGRES_DB: ${DATABASE_NAME}
+    env_file:
+      - env/snippet.env
     volumes:
       - snippet-db:/var/lib/postgresql/data
     networks:
@@ -110,6 +112,8 @@ services:
       POSTGRES_USER: ${DATABASE_USERNAME}
       POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
       POSTGRES_DB: ${DATABASE_NAME}
+    env_file:
+      - env/format.env
     volumes:
       - format-db:/var/lib/postgresql/data
     networks:
@@ -140,6 +144,8 @@ services:
       POSTGRES_USER: ${DATABASE_USERNAME}
       POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
       POSTGRES_DB: ${DATABASE_NAME}
+    env_file:
+      - env/linter.env
     volumes:
       - linter-db:/var/lib/postgresql/data
     networks:
@@ -170,6 +176,8 @@ services:
       POSTGRES_USER: ${DATABASE_USERNAME}
       POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
       POSTGRES_DB: ${DATABASE_NAME}
+    env_file:
+      - env/test.env
     volumes:
       - test-db:/var/lib/postgresql/data
     networks:
@@ -200,6 +208,8 @@ services:
       POSTGRES_USER: ${DATABASE_USERNAME}
       POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
       POSTGRES_DB: ${DATABASE_NAME}
+    env_file:
+      - env/authorization.env
     volumes:
       - auth-db:/var/lib/postgresql/data
     networks:
@@ -226,6 +236,8 @@ services:
       POSTGRES_USER: ${DATABASE_USERNAME}
       POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
       POSTGRES_DB: ${DATABASE_NAME}
+    env_file:
+      - env/permission.env
     volumes:
       - permission-db:/var/lib/postgresql/data
     networks:
