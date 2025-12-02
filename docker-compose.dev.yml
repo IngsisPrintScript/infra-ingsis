@@ -58,6 +58,11 @@ services:
   asset-service:
     image: ghcr.io/austral-ingsis/snippet-asset-service:latest
     container_name: asset-service
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 5s
+      timeout: 3s
+      retries: 5
     env_file:
       - env/snippet.env
     depends_on:
@@ -80,15 +85,18 @@ services:
     networks:
       - snippet-net
 
-  snippet-service:
+  snippet:
     image: ghcr.io/ingsisprintscript/snippet-service:dev
     container_name: snippet-service
     env_file:
       - env/snippet.env
     depends_on:
-      - snippet-db
-      - redis
-      - asset-service
+      redis:
+        condition: service_healthy
+      snippet-db:
+        condition: service_healthy
+      asset-service:
+        condition: service_healthy
     networks:
       - snippet-net
 
@@ -107,13 +115,18 @@ services:
     networks:
       - snippet-net
 
-  format-service:
+  formatter:
     image: ghcr.io/ingsisprintscript/format-service:dev
     container_name: format-service
     env_file:
       - env/format.env
     depends_on:
-      - format-db
+      redis:
+        condition: service_healthy
+      format-db:
+        condition: service_healthy
+      asset-service:
+        condition: service_healthy
     networks:
       - snippet-net
 
@@ -132,13 +145,18 @@ services:
     networks:
       - snippet-net
 
-  linter-service:
+  linter:
     image: ghcr.io/ingsisprintscript/linter-service:dev
     container_name: linter-service
     env_file:
       - env/linter.env
     depends_on:
-      - linter-db
+      redis:
+        condition: service_healthy
+      linter-db:
+        condition: service_healthy
+      asset-service:
+        condition: service_healthy
     networks:
       - snippet-net
 
@@ -157,13 +175,18 @@ services:
     networks:
       - snippet-net
 
-  test-service:
+  tester:
     image: ghcr.io/ingsisprintscript/test-service:dev
     container_name: test-service
     env_file:
       - env/test.env
     depends_on:
-      - test-db
+      redis:
+        condition: service_healthy
+      test-db:
+        condition: service_healthy
+      asset-service:
+        condition: service_healthy
     networks:
       - snippet-net
 
@@ -182,13 +205,14 @@ services:
     networks:
       - snippet-net
 
-  authentication-service:
+  authentication:
     image: ghcr.io/ingsisprintscript/users-authorization:dev
     container_name: authentication-service
     env_file:
       - env/auth.env
     depends_on:
-      - auth-db
+      auth-db:
+        condition: service_healthy
     networks:
       - snippet-net
 
@@ -207,13 +231,14 @@ services:
     networks:
       - snippet-net
 
-  permission-service:
+  permission:
     image: ghcr.io/ingsisprintscript/permission-service:dev
     container_name: permission-service
     env_file:
       - env/permission.env
     depends_on:
-      - permission-db
+      permission-db:
+        condition: service_healthy
     networks:
       - snippet-net
 
@@ -221,7 +246,7 @@ services:
   # ENGINE SERVICE (NUEVO)
   # ---------------------------------------------------------------------------
 
-  engine-service:
+  engine:
     image: ghcr.io/ingsisprintscript/engine-service:dev
     container_name: engine-service
     env_file:
@@ -238,6 +263,8 @@ services:
     container_name: ui
     networks:
       - snippet-net
+    ports:
+      - "5173:5173"
 
 # ---------------------------------------------------------------------------
 # VOLUMES
