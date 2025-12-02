@@ -210,6 +210,11 @@ services:
       POSTGRES_USER: ${AUTHORIZATION_USERNAME}
       POSTGRES_PASSWORD: ${AUTHORIZATION_PASSWORD}
       POSTGRES_DB: ${AUTHORIZATION_NAME}
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${AUTHORIZATION_USERNAME}" ]
+      interval: 5s
+      timeout: 3s
+      retries: 5
     env_file:
       - env/.env
     volumes:
