@@ -23,6 +23,7 @@ services:
       - ui                      
     networks:
       - snippet-net
+    restart: unless-stopped
 
   # ---------------------------------------------------------------------------
   # GLOBAL SERVICES
@@ -31,10 +32,8 @@ services:
   redis:
     image: redis:6-alpine
     container_name: redis
-    ports:
-      - "${REDIS_PORT}:6379"
     env_file:
-      - env/.env
+      - env/redis/.env
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
@@ -60,14 +59,16 @@ services:
   asset-service:
     image: ghcr.io/austral-ingsis/snippet-asset-service:latest
     container_name: asset-service
+    environment:
+      NEW_RELIC_AGENT_ENABLED: "true"
     env_file:
-      - env/.env
+      - env/asset/.env
     depends_on:
       azurite:
         condition: service_started
     networks:
       - snippet-net
-
+    restart: unless-stopped
 
   # ---------------------------------------------------------------------------
   # SNIPPET SERVICE
@@ -75,73 +76,58 @@ services:
 
   snippet-db:
     image: postgres:alpine
-    environment:
-      POSTGRES_USER: ${SNIPPET_USERNAME}
-      POSTGRES_PASSWORD: ${SNIPPET_PASSWORD}
-      POSTGRES_DB: ${SNIPPET_NAME}
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U ${SNIPPET_USERNAME}" ]
-      interval: 5s
-      timeout: 3s
-      retries: 5
     env_file:
-      - env/.env
+      - env/snippet/.env
     volumes:
       - snippet-db:/var/lib/postgresql/data
     networks:
       - snippet-net
+    restart: unless-stopped
 
   snippet:
     image: ghcr.io/ingsisprintscript/snippet-service:dev
     container_name: snippet-service
     env_file:
-      - env/.env
+      - env/snippet/.env
     depends_on:
       redis:
         condition: service_healthy
       snippet-db:
-        condition: service_healthy
+        condition: service_started
       asset-service:
         condition: service_started
     networks:
       - snippet-net
-
+    restart: unless-stopped
   # ---------------------------------------------------------------------------
   # FORMAT SERVICE
   # --------------------------------------------------------------------------
 
   format-db:
     image: postgres:alpine
-    environment:
-      POSTGRES_USER: ${FORMAT_USERNAME}
-      POSTGRES_PASSWORD: ${FORMAT_PASSWORD}
-      POSTGRES_DB: ${FORMAT_NAME}
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U ${FORMAT_USERNAME}" ]
-      interval: 5s
-      timeout: 3s
-      retries: 5
     env_file:
-      - env/.env
+      - env/format/.env
     volumes:
       - format-db:/var/lib/postgresql/data
     networks:
       - snippet-net
+    restart: unless-stopped
 
   formatter:
     image: ghcr.io/ingsisprintscript/format-service:dev
-    container_name: format-service
+    container_name: formatter
     env_file:
-      - env/.env
+      - env/format/.env
     depends_on:
       redis:
         condition: service_healthy
       format-db:
-        condition: service_healthy
+        condition: service_started
       asset-service:
         condition: service_started
     networks:
       - snippet-net
+    restart: unless-stopped
 
   # ---------------------------------------------------------------------------
   # LINTER SERVICE
@@ -149,36 +135,29 @@ services:
 
   linter-db:
     image: postgres:alpine
-    environment:
-      POSTGRES_USER: ${LINTER_USERNAME}
-      POSTGRES_PASSWORD: ${LINTER_PASSWORD}
-      POSTGRES_DB: ${LINTER_NAME}
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U ${LINTER_USERNAME}" ]
-      interval: 5s
-      timeout: 3s
-      retries: 5
     env_file:
-      - env/.env
+      - env/linter/.env
     volumes:
       - linter-db:/var/lib/postgresql/data
     networks:
       - snippet-net
+    restart: unless-stopped
 
   linter:
     image: ghcr.io/ingsisprintscript/linter-service:dev
     container_name: linter-service
     env_file:
-      - env/.env
+      - env/linter/.env
     depends_on:
       redis:
         condition: service_healthy
       linter-db:
-        condition: service_healthy
+        condition: service_started
       asset-service:
         condition: service_started
     networks:
       - snippet-net
+    restart: unless-stopped
 
   # ---------------------------------------------------------------------------
   # TEST SERVICE
@@ -186,69 +165,55 @@ services:
 
   test-db:
     image: postgres:alpine
-    environment:
-      POSTGRES_USER: ${TEST_USERNAME}
-      POSTGRES_PASSWORD: ${TEST_PASSWORD}
-      POSTGRES_DB: ${TEST_NAME}
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U ${TEST_USERNAME}" ]
-      interval: 5s
-      timeout: 3s
-      retries: 5
     env_file:
-      - env/.env
+      - env/test/.env
     volumes:
       - test-db:/var/lib/postgresql/data
     networks:
       - snippet-net
+    restart: unless-stopped
 
   tester:
     image: ghcr.io/ingsisprintscript/test-service:dev
-    container_name: test-service
+    container_name: tester
     env_file:
-      - env/.env
+      - env/test/.env
     depends_on:
       redis:
         condition: service_healthy
       test-db:
-        condition: service_healthy
+        condition: service_started
       asset-service:
         condition: service_started
     networks:
       - snippet-net
+    restart: unless-stopped
 
   # ---------------------------------------------------------------------------
   # AUTH SERVICE
   # ---------------------------------------------------------------------------
 
-  auth-db:
+  authentication-db:
     image: postgres:alpine
-    environment:
-      POSTGRES_USER: ${AUTHORIZATION_USERNAME}
-      POSTGRES_PASSWORD: ${AUTHORIZATION_PASSWORD}
-      POSTGRES_DB: ${AUTHORIZATION_NAME}
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U ${AUTHORIZATION_USERNAME}" ]
-      interval: 5s
-      timeout: 3s
-      retries: 5
     env_file:
-      - env/.env
+      - env/authentication/.env
     volumes:
-      - auth-db:/var/lib/postgresql/data
+      - authentication-db:/var/lib/postgresql/data
     networks:
       - snippet-net
+    restart: unless-stopped
 
   authentication:
     image: ghcr.io/ingsisprintscript/users-authorization:dev
     container_name: authentication-service
     env_file:
-      - env/.env
+      - env/authentication/.env
     depends_on:
-      auth-db:
-        condition: service_healthy
+      authentication-db:
+        condition: service_started
     networks:
       - snippet-net
+    restart: unless-stopped
 
   # ---------------------------------------------------------------------------
   # PERMISSION SERVICE
@@ -256,32 +221,25 @@ services:
 
   permission-db:
     image: postgres:alpine
-    environment:
-      POSTGRES_USER: ${PERMISSION_USERNAME}
-      POSTGRES_PASSWORD: ${PERMISSION_PASSWORD}
-      POSTGRES_DB: ${PERMISSION_NAME}
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U ${PERMISSION_USERNAME}" ]
-      interval: 5s
-      timeout: 3s
-      retries: 5
     env_file:
-      - env/.env
+      - env/permission/.env
     volumes:
       - permission-db:/var/lib/postgresql/data
     networks:
       - snippet-net
+    restart: unless-stopped
 
   permission:
     image: ghcr.io/ingsisprintscript/permission-service:dev
     container_name: permission-service
     env_file:
-      - env/.env
+      - env/permission/.env
     depends_on:
       permission-db:
-        condition: service_healthy
+        condition: service_started
     networks:
       - snippet-net
+    restart: unless-stopped
 
   # ---------------------------------------------------------------------------
   # ENGINE SERVICE (NUEVO)
@@ -291,29 +249,24 @@ services:
     image: ghcr.io/ingsisprintscript/engine-service:dev
     container_name: engine-service
     env_file:
-      - env/.env
+      - env/engine/.env
     networks:
       - snippet-net
+    restart: unless-stopped
 
   # ---------------------------------------------------------------------------
   # UI SERVICE (NUEVO)
   # ---------------------------------------------------------------------------
-
-
   ui:
     build:
       context: ../printscript-ui
       dockerfile: Dockerfile
-      args:
-        VITE_AUTH0_DOMAIN: ${VITE_AUTH0_DOMAIN}
-        VITE_AUTH0_CLIENT_ID: ${VITE_AUTH0_CLIENT_ID}
-        VITE_AUTH0_AUDIENCE: ${VITE_AUTH0_AUDIENCE}
-        VITE_AUTH0_CALLBACK_URL: ${VITE_AUTH0_CALLBACK_URL}
-        VITE_API_BASE_URL: ${VITE_API_BASE_URL}
-        VITE_API_USER_BASE_URL: ${VITE_API_USER_BASE_URL}
+    env_file:
+      - env/ui/.env
     container_name: ui
     networks:
       - snippet-net
+    restart: unless-stopped
 
 # ---------------------------------------------------------------------------
 # VOLUMES
@@ -323,7 +276,7 @@ volumes:
   format-db:
   linter-db:
   test-db:
-  auth-db:
+  authentication-db:
   permission-db:
   redis-data:
   blob:
