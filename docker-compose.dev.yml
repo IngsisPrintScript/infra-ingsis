@@ -258,12 +258,10 @@ services:
   # UI SERVICE (NUEVO)
   # ---------------------------------------------------------------------------
   ui:
-    build:
-      context: ../printscript-ui
-      dockerfile: Dockerfile
+    image: ghcr.io/ingsisprintscript/printscript-ui:dev
+    container_name: ui
     env_file:
       - env/ui/.env
-    container_name: ui
     networks:
       - snippet-net
     restart: unless-stopped
