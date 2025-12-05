@@ -204,7 +204,7 @@ services:
     restart: unless-stopped
 
   authentication:
-    image: ghcr.io/ingsisprintscript/users-authorization:dev
+    image: ghcr.io/ingsisprintscript/users-authentication:dev
     container_name: authentication-service
     env_file:
       - env/authentication/.env
