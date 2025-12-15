@@ -83,6 +83,10 @@ services:
 
   snippet:
     image: ghcr.io/ingsisprintscript/snippet-service:dev
+    environment:
+      ENGINE_URL: http://engine-service:8080
+      PERMISSION_URL: http://permission-service:8080
+      AUTHENTICATION_URL: http://authentication-service:8080
     container_name: snippet-service
     env_file:
       - env/snippet/.env
