@@ -172,8 +172,6 @@ services:
   ui:
     image: ghcr.io/ingsisprintscript/printscript-ui:dev
     container_name: ui
-    env_file:
-      - env/ui/.env
     networks:
       - snippet-net
     restart: unless-stopped
