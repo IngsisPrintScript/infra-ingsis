@@ -1,5 +1,8 @@
-
 services:
+
+  # ---------------------------------------------------------------------------
+  # REVERSE PROXY
+  # ---------------------------------------------------------------------------
   reverse-proxy:
     image: nginx:1.27-alpine
     container_name: reverse-proxy-prod
@@ -10,32 +13,192 @@ services:
       - "80:80"
       - "443:443"
     depends_on:
-      - snippet-api
-      - parser-api
+      - snippet
+      - authentication
+      - permission
+      - engine
       - ui
     networks:
-      - internal
+      - snippet-net
+    restart: unless-stopped
 
-  snippet-api:
-    image: ghcr.io/IngsisPrintScript/snippet-api:prod
-    container_name: snippet-api-prod
+  # ---------------------------------------------------------------------------
+  # GLOBAL SERVICES
+  # ---------------------------------------------------------------------------
+
+  redis:
+    image: redis:6-alpine
+    container_name: redis-prod
+    env_file:
+      - env/redis/.env
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    volumes:
+      - redis-data:/data
+    networks:
+      - snippet-net
+    restart: unless-stopped
+
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite
+    container_name: azurite-prod
+    volumes:
+      - blob:/workspace
+    networks:
+      - snippet-net
+    restart: unless-stopped
+
+  asset-service:
+    image: ghcr.io/austral-ingsis/snippet-asset-service:prod
+    container_name: asset-service-prod
+    env_file:
+      - env/asset/.env
     environment:
-      - SPRING_PROFILES_ACTIVE=prod
+      NEW_RELIC_AGENT_ENABLED: "true"
+    depends_on:
+      azurite:
+        condition: service_started
     networks:
-      - internal
+      - snippet-net
+    restart: unless-stopped
 
-  parser-api:
-    image: ghcr.io/IngsisPrintScript/parser-api:prod
-    container_name: parser-api-prod
+  # ---------------------------------------------------------------------------
+  # SNIPPET SERVICE
+  # ---------------------------------------------------------------------------
+
+  snippet-db:
+    image: postgres:alpine
+    container_name: snippet-db-prod
+    env_file:
+      - env/snippet/.env
+    volumes:
+      - snippet-db:/var/lib/postgresql/data
     networks:
-      - internal
+      - snippet-net
+    restart: unless-stopped
+
+  snippet:
+    image: ghcr.io/ingsisprintscript/snippet-service:prod
+    container_name: snippet-service-prod
+    env_file:
+      - env/snippet/.env
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+    depends_on:
+      redis:
+        condition: service_healthy
+      snippet-db:
+        condition: service_started
+      asset-service:
+        condition: service_started
+    networks:
+      - snippet-net
+    restart: unless-stopped
+
+  # ---------------------------------------------------------------------------
+  # AUTH SERVICE
+  # ---------------------------------------------------------------------------
+
+  authentication-db:
+    image: postgres:alpine
+    container_name: authentication-db-prod
+    env_file:
+      - env/authentication/.env
+    volumes:
+      - authentication-db:/var/lib/postgresql/data
+    networks:
+      - snippet-net
+    restart: unless-stopped
+
+  authentication:
+    image: ghcr.io/ingsisprintscript/users-authentication:prod
+    container_name: authentication-service-prod
+    env_file:
+      - env/authentication/.env
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+    depends_on:
+      authentication-db:
+        condition: service_started
+    networks:
+      - snippet-net
+    restart: unless-stopped
+
+  # ---------------------------------------------------------------------------
+  # PERMISSION SERVICE
+  # ---------------------------------------------------------------------------
+
+  permission-db:
+    image: postgres:alpine
+    container_name: permission-db-prod
+    env_file:
+      - env/permission/.env
+    volumes:
+      - permission-db:/var/lib/postgresql/data
+    networks:
+      - snippet-net
+    restart: unless-stopped
+
+  permission:
+    image: ghcr.io/ingsisprintscript/permission-service:prod
+    container_name: permission-service-prod
+    env_file:
+      - env/permission/.env
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+    depends_on:
+      permission-db:
+        condition: service_started
+    networks:
+      - snippet-net
+    restart: unless-stopped
+
+  # ---------------------------------------------------------------------------
+  # ENGINE SERVICE
+  # ---------------------------------------------------------------------------
+
+  engine:
+    image: ghcr.io/ingsisprintscript/engine-service:prod
+    container_name: engine-service-prod
+    env_file:
+      - env/engine/.env
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+    networks:
+      - snippet-net
+    restart: unless-stopped
+
+  # ---------------------------------------------------------------------------
+  # UI SERVICE
+  # ---------------------------------------------------------------------------
 
   ui:
-    image: ghcr.io/IngsisPrintScript/snippet-ui:prod
-    container_name: snippet-ui-prod
+    image: ghcr.io/ingsisprintscript/printscript-ui:prod
+    container_name: ui-prod
+    env_file:
+      - env/ui/.env
     networks:
-      - internal
+      - snippet-net
+    restart: unless-stopped
 
+
+# ---------------------------------------------------------------------------
+# VOLUMES
+# ---------------------------------------------------------------------------
+volumes:
+  snippet-db:
+  authentication-db:
+  permission-db:
+  redis-data:
+  blob:
+
+
+# ---------------------------------------------------------------------------
+# NETWORKS
+# ---------------------------------------------------------------------------
 networks:
-  internal:
+  snippet-net:
     driver: bridge
