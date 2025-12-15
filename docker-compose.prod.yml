@@ -52,7 +52,7 @@ services:
     restart: unless-stopped
 
   asset-service:
-    image: ghcr.io/austral-ingsis/snippet-asset-service:prod
+    image: ghcr.io/austral-ingsis/snippet-asset-service:latest
     container_name: asset-service-prod
     env_file:
       - env/asset/.env
